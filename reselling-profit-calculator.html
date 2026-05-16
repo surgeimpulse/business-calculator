@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reselling Profit Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00c27a;
+      --green-light: #e6fff5;
+      --green-dark: #008f59;
+      --red: #ff4d4d;
+      --red-light: #fff0f0;
+      --bg: #f5f4f0;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #888;
+      --border: #e0ddd6;
+      --accent: #1a1a1a;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 760px;
+      margin: 0 auto 2rem;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    header h1 span {
+      color: var(--green);
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      max-width: 760px;
+      margin: 0 auto 1.25rem;
+    }
+
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .input-grid { grid-template-columns: 1fr; }
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    .field label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .prefix-wrap {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .prefix-wrap:focus-within {
+      border-color: var(--green);
+    }
+
+    .prefix-wrap span {
+      padding: 0 12px;
+      background: #f9f8f5;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      border-right: 1.5px solid var(--border);
+    }
+
+    .prefix-wrap input, input[type="text"], input[type="number"] {
+      border: none;
+      outline: none;
+      height: 42px;
+      padding: 0 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: transparent;
+      width: 100%;
+    }
+
+    input[type="text"], input[type="number"] {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+    .add-btn {
+      width: 100%;
+      margin-top: 12px;
+      height: 46px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .add-btn:hover { background: #333; }
+    .add-btn:active { transform: scale(0.98); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      max-width: 760px;
+      margin: 0 auto 1.25rem;
+    }
+
+    @media (max-width: 560px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1rem;
+    }
+
+    .metric-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .metric-value.green { color: var(--green-dark); }
+    .metric-value.red { color: var(--red); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 12px 8px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: #fafaf8; }
+
+    tfoot td {
+      padding: 12px 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-top: 2px solid var(--border);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .badge.profit { background: var(--green-light); color: var(--green-dark); }
+    .badge.loss { background: var(--red-light); color: var(--red); }
+
+    .del-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 3px 8px;
+      font-size: 0.8rem;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .del-btn:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .profit-cell { color: var(--green-dark) !important; font-weight: 500; }
+    .loss-cell { color: var(--red) !important; font-weight: 500; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-top: 2rem;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Reselling <span>Profit</span><br>Calculator</h1>
+    <p>Track what you buy, what you sell, and how much you make.</p>
+  </header>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-label">Invested</div>
+      <div class="metric-value" id="m-invested">₹0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Revenue</div>
+      <div class="metric-value" id="m-revenue">₹0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Net Profit</div>
+      <div class="metric-value" id="m-profit">₹0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Margin</div>
+      <div class="metric-value" id="m-margin">0%</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Add a product</div>
+    <div class="input-grid">
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Product name</label>
+        <input type="text" id="name" placeholder="e.g. Phone case, Sticker pack…" />
+      </div>
+    </div>
+    <div class="input-grid">
+      <div class="field">
+        <label>Quantity</label>
+        <input type="number" id="qty" min="1" value="1" />
+      </div>
+      <div class="field">
+        <label>Extra costs (shipping etc.)</label>
+        <div class="prefix-wrap"><span>₹</span><input type="number" id="extra" min="0" placeholder="0" /></div>
+      </div>
+      <div class="field">
+        <label>Buy price (per unit)</label>
+        <div class="prefix-wrap"><span>₹</span><input type="number" id="buy" min="0" placeholder="0" /></div>
+      </div>
+      <div class="field">
+        <label>Sell price (per unit)</label>
+        <div class="prefix-wrap"><span>₹</span><input type="number" id="sell" min="0" placeholder="0" /></div>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addItem()">+ Add Product</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Products</div>
+    <div id="table-wrap">
+      <div class="empty">No products yet — add one above to get started.</div>
+    </div>
+  </div>
+
+  <footer>Built for young resellers 🚀 — track every rupee.</footer>
+
+  <script>
+    let items = [];
+    let idCounter = 0;
+
+    function fmt(n) {
+      return '₹' + Math.round(n).toLocaleString('en-IN');
+    }
+
+    function pct(n) {
+      return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+    }
+
+    function addItem() {
+      const name = document.getElementById('name').value.trim() || 'Product';
+      const qty = parseInt(document.getElementById('qty').value) || 1;
+      const buy = parseFloat(document.getElementById('buy').value) || 0;
+      const sell = parseFloat(document.getElementById('sell').value) || 0;
+      const extra = parseFloat(document.getElementById('extra').value) || 0;
+
+      items.push({ id: idCounter++, name, qty, buy, sell, extra });
+
+      document.getElementById('name').value = '';
+      document.getElementById('qty').value = 1;
+      document.getElementById('buy').value = '';
+      document.getElementById('sell').value = '';
+      document.getElementById('extra').value = '';
+
+      render();
+    }
+
+    function deleteItem(id) {
+      items = items.filter(i => i.id !== id);
+      render();
+    }
+
+    function render() {
+      const wrap = document.getElementById('table-wrap');
+
+      if (items.length === 0) {
+        wrap.innerHTML = '<div class="empty">No products yet — add one above to get started.</div>';
+        updateMetrics(0, 0, 0);
+        return;
+      }
+
+      let totalInvested = 0, totalRevenue = 0, totalProfit = 0;
+      let rows = '';
+
+      items.forEach(item => {
+        const invested = (item.buy * item.qty) + item.extra;
+        const revenue = item.sell * item.qty;
+        const profit = revenue - invested;
+        const margin = invested > 0 ? (profit / invested) * 100 : 0;
+
+        totalInvested += invested;
+        totalRevenue += revenue;
+        totalProfit += profit;
+
+        const profitClass = profit >= 0 ? 'profit-cell' : 'loss-cell';
+        const badgeClass = profit >= 0 ? 'profit' : 'loss';
+
+        rows += `<tr>
+          <td style="font-family:'Syne',sans-serif;font-weight:500;">${item.name}</td>
+          <td>${item.qty}</td>
+          <td>${fmt(item.buy)}</td>
+          <td>${fmt(item.sell)}</td>
+          <td>${fmt(item.extra)}</td>
+          <td class="${profitClass}">${fmt(profit)}</td>
+          <td><span class="badge ${badgeClass}">${pct(margin)}</span></td>
+          <td><button class="del-btn" onclick="deleteItem(${item.id})">✕</button></td>
+        </tr>`;
+      });
+
+      const totalMargin = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
+      const totalProfitClass = totalProfit >= 0 ? 'profit-cell' : 'loss-cell';
+      const totalBadgeClass = totalProfit >= 0 ? 'profit' : 'loss';
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Buy</th>
+              <th>Sell</th>
+              <th>Extras</th>
+              <th>Profit</th>
+              <th>Margin</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" style="font-family:'Syne',sans-serif;">Total</td>
+              <td class="${totalProfitClass}">${fmt(totalProfit)}</td>
+              <td><span class="badge ${totalBadgeClass}">${pct(totalMargin)}</span></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>`;
+
+      updateMetrics(totalInvested, totalRevenue, totalProfit);
+    }
+
+    function updateMetrics(invested, revenue, profit) {
+      document.getElementById('m-invested').textContent = fmt(invested);
+      document.getElementById('m-revenue').textContent = fmt(revenue);
+
+      const profitEl = document.getElementById('m-profit');
+      profitEl.textContent = fmt(profit);
+      profitEl.className = 'metric-value ' + (profit >= 0 ? 'green' : 'red');
+
+      const margin = invested > 0 ? (profit / invested) * 100 : 0;
+      const marginEl = document.getElementById('m-margin');
+      marginEl.textContent = pct(margin);
+      marginEl.className = 'metric-value ' + (profit >= 0 ? 'green' : 'red');
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') addItem();
+    });
+  </script>
+
+</body>
+</html>
